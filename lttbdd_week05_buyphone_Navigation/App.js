@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,13 +12,30 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const Stack = createNativeStackNavigator();
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, route }) => {
+  const selectedColor = route.params?.selectedColor || '';
+
+  const getImageSource = () => {
+    switch (selectedColor) {
+      case '#C5F1FB':
+        return require('./assets/vs_silver.png');
+      case '#F30D0D':
+        return require('./assets/vs_red.png');
+      case '#000':
+        return require('./assets/vs_black.png');
+      case '#234896':
+        return require('./assets/vs_blue.png');
+      default:
+        return require('./assets/vs_blue.png');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image
           style={styles.productImage}
-          source={require('./assets/vs_blue.png')}
+          source={getImageSource()}
         />
         <Text style={styles.productText}>
           Điện Thoại Vsmart Joy 3 - Hàng chính hãng
@@ -64,8 +81,7 @@ const HomeScreen = ({ navigation }) => {
 
       <TouchableOpacity
         style={styles.purchaseButton}
-        onPress={() => navigation.navigate('Details')}
-      >
+        onPress={() => navigation.navigate('Details')}>
         <Text style={styles.purchaseButtonText}>Chọn mua</Text>
       </TouchableOpacity>
     </View>
@@ -73,35 +89,76 @@ const HomeScreen = ({ navigation }) => {
 };
 
 const DetailsScreen = ({ navigation }) => {
+  const [selectedColor, setSelectedColor] = useState('');
+
+  const getImageSource = () => {
+    switch (selectedColor) {
+      case '#C5F1FB':
+        return require('./assets/vs_silver.png');
+      case '#F30D0D':
+        return require('./assets/vs_red.png');
+      case '#000':
+        return require('./assets/vs_black.png');
+      case '#234896':
+        return require('./assets/vs_blue.png');
+      default:
+        return require('./assets/vs_blue.png');
+    }
+  };
+
+  // Mapping color codes to names
+  const getColorName = (color) => {
+    switch (color) {
+      case '#C5F1FB':
+        return 'Xám'; // Light Blue
+      case '#F30D0D':
+        return 'Đỏ'; // Red
+      case '#000':
+        return 'Đen'; // Black
+      case '#234896':
+        return 'Xanh Dương'; // Blue
+      default:
+        return 'Xanh Dương'; // Default text
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.detailsHeader}>
-        <Image
-          style={styles.detailImage}
-          source={require('./assets/vs_blue.png')}
-        />
-        <Text style={styles.detailText}>
-          Điện Thoại Vsmart Joy 3 Hàng chính hãng
-        </Text>
+        <Image style={styles.detailImage} source={getImageSource()} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.detailText}>
+            Điện Thoại Vsmart Joy 3 Hàng chính hãng
+          </Text>
+          <View style={{ flexDirection: 'row', marginTop: 8 }}>
+            <Text style={{marginLeft:10}}>màu:</Text>
+            <Text style={{ fontWeight: '700', marginLeft:10 }}>{getColorName(selectedColor)}</Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', marginTop: 8, marginLeft: 8 }}>
+            <Text>cung cấp bởi</Text>
+            <Text style={{ fontWeight: '700', marginLeft: 8 }}>Tiki Trading</Text>
+          </View>
+
+          <Text style={{ fontWeight: '700', marginTop:8, marginLeft: 8 }}>1.790.000 đ</Text>
+        </View>
       </View>
 
       <View style={styles.colorSelectionContainer}>
-        <Text style={styles.colorSelectionText}>
-          Chọn một màu bên dưới:
-        </Text>
+        <Text style={styles.colorSelectionText}>Chọn một màu bên dưới:</Text>
         <View style={styles.colorOptions}>
-          {['#C5F1FB', '#F30D0D', '#000', '#234896'].map((color, index) => (
-            <View
-              key={index}
+          {['#C5F1FB', '#F30D0D', '#000', '#234896'].map((color) => (
+            <TouchableOpacity
+              key={color}
               style={[styles.colorOption, { backgroundColor: color }]}
+              onPress={() => setSelectedColor(color)}
             />
           ))}
         </View>
-        
+
         <TouchableOpacity
           style={styles.doneButton}
-          onPress={() => navigation.navigate('Home')}
-        >
+          onPress={() => navigation.navigate('Home', { selectedColor })}>
           <Text style={styles.doneButtonText}>XONG</Text>
         </TouchableOpacity>
       </View>
@@ -112,7 +169,7 @@ const DetailsScreen = ({ navigation }) => {
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="Details">
         <Stack.Screen
           name="Home"
           component={HomeScreen}
@@ -153,7 +210,7 @@ const styles = StyleSheet.create({
   },
   starsContainer: {
     flexDirection: 'row',
-    marginRight: 50
+    marginRight: 50,
   },
   starImage: {
     width: 24,
@@ -163,7 +220,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft:-36
+    marginLeft: -36,
   },
   currentPrice: {
     fontSize: 18,
@@ -180,7 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 16,
-    marginLeft:-88
+    marginLeft: -88,
   },
   discountText: {
     fontSize: 12,
@@ -207,7 +264,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#000',
     borderRadius: 5,
     paddingHorizontal: 10,
   },
@@ -242,9 +298,9 @@ const styles = StyleSheet.create({
   detailsHeader: {
     flexDirection: 'row',
     backgroundColor: 'white',
-    alignItems: 'flex-start', // Align items to the top
+    alignItems: 'flex-start',
     padding: 10,
-    width: '100%', // Full width for header
+    width: '100%',
   },
   detailImage: {
     width: 112,
@@ -254,35 +310,35 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     flex: 1,
     fontSize: 16,
-    fontWeight: 'bold', // Optional: make the text bold
+    fontWeight: 'bold',
   },
   colorSelectionContainer: {
-    backgroundColor: '#C4C4C4', // Same gray background
+    backgroundColor: '#C4C4C4',
     padding: 20,
-    justifyContent: 'flex-start', // Align items to the top
-    alignItems: 'center', // Center horizontally
-    width: '100%', // Full width
-    flex: 1, // Allow it to take full height
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '100%',
+    flex: 1,
   },
   colorSelectionText: {
     fontSize: 18,
     marginBottom: 10,
-    marginLeft:-100
+    marginLeft: -100,
   },
   colorOptions: {
-    flexDirection: 'column', // Stack colors vertically
-    justifyContent: 'space-between', // Space them evenly
-    alignItems: 'center', // Center the color options
-    width: '100%', // Full width for color options
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
   },
   colorOption: {
-    width: 85, // Fixed width for each color option
+    width: 85,
     height: 80,
-    marginVertical: 10, // Space between each color option
+    marginVertical: 10,
   },
   doneButton: {
-    backgroundColor: '#1952E294', // Button color
-    width: '100%', // Full width
+    backgroundColor: '#1952E294',
+    width: '100%',
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
